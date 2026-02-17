@@ -86,6 +86,24 @@ function bizuno_payment_purchase_order_class() {
     }
 }
 
+// Block handler for Checkout Blocks.
+if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+    class WC_PayFabric_Blocks_Payment_Method extends Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType {
+        public function initialize() {
+            $this->name = 'payfabric';
+        }
+
+        public function is_active() {
+            return true; // Or check settings.
+        }
+
+        public function get_payment_method_script_handles() {
+            // Enqueue JS for blocks if needed.
+            return array( 'payfabric-blocks' );
+        }
+    }
+}
+
 // Declare HPOS compatibility.
 add_action( 'before_woocommerce_init', function() {
     if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {

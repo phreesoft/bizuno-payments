@@ -38,13 +38,13 @@ class bizuno_payments
     {
         if ( ! is_plugin_active ( 'woocommerce/woocommerce.php' ) ) { return; }
         // Load Woocommerce plugins only if WooCommerce is installed and active
-        bizuno_payfabric_gateway_class();
-        bizuno_payment_purchase_order_class();
-        WC()->frontend_includes();
-        if ( class_exists ( 'WC_Payment_Gateway' ) ) { // get instance of WooCommerce for Payfabric
-            require ( plugin_dir_path ( __FILE__ ) . 'payfabric/classes/class-payfabric-gateway-woocommerce.php' );
-            Payfabric_Gateway_Woocommerce::get_instance();
-        }
+//        bizuno_payfabric_gateway_class();
+//        bizuno_payment_purchase_order_class();
+//        WC()->frontend_includes();
+//        if ( class_exists ( 'WC_Payment_Gateway' ) ) { // get instance of WooCommerce for Payfabric
+//            require ( plugin_dir_path ( __FILE__ ) . 'payfabric/classes/class-payfabric-gateway-woocommerce.php' );
+//            Payfabric_Gateway_Woocommerce::get_instance();
+//        }
     }
 
     public function bizuno_payments_add_to_gateways( $gateways )

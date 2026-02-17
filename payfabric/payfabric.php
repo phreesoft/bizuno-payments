@@ -40,8 +40,8 @@ function bizuno_payfabric_gateway_class()
             $this->method_title       = __( 'Custom', 'bizuno-payfabric' );
             $this->method_description = __( 'Allows payments with custom gateway.', 'bizuno-payfabric' );
             // Load the settings.
-            $this->init_form_fields();
-            $this->init_settings();
+//            $this->init_form_fields();
+//            $this->init_settings();
             // Define user set variables
             $this->title        = $this->get_option( 'title' );
             $this->description  = $this->get_option( 'description' );
@@ -55,6 +55,7 @@ function bizuno_payfabric_gateway_class()
 
         public function init_form_fields()
         {
+            
             $this->form_fields = [
                 'enabled'      => [ 'title' => __( 'Enable/Disable', 'bizuno-payfabric' ), 'type' => 'checkbox', 'default' => 'yes',
                     'label'       => __( 'Enable Custom Payment', 'bizuno-payfabric' )],
@@ -112,3 +113,28 @@ function bizuno_payfabric_gateway_class()
         }
     }
 }
+
+// Block handler for Checkout Blocks.
+if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+    class WC_PayFabric_Blocks_Payment_Method extends Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType {
+        public function initialize() {
+            $this->name = 'payfabric';
+        }
+
+        public function is_active() {
+            return true; // Or check settings.
+        }
+
+        public function get_payment_method_script_handles() {
+            // Enqueue JS for blocks if needed.
+            return array( 'payfabric-blocks' );
+        }
+    }
+}
+
+// Declare HPOS compatibility.
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+} );
