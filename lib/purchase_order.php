@@ -21,15 +21,13 @@
  * @author     Dave Premo, PhreeSoft <support@phreesoft.com>
  * @copyright  2008-2026, PhreeSoft, Inc.
  * @license    https://www.gnu.org/licenses/agpl-3.0.txt
- * @version    7.x Last Update: 2026-02-17
+ * @version    1.x Last Update: 2026-02-17
  * @filesource /lib/purchase_order.php
  */
 
-namespace bizuno;
-
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-function bizuno_payment_puchase_order_class() {
+function bizuno_payment_purchase_order_class() {
     class WC_Gateway_PurchaseOrder extends WC_Payment_Gateway
     {
         public function __construct()
