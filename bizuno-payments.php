@@ -20,6 +20,20 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 require_once ( dirname(__FILE__) . '/payfabric/payfabric.php' );
 require_once ( dirname(__FILE__) . '/purchase_order.php' );
 
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'product_instance_caching', __FILE__, true );
+    }
+} );
+
+// Declare HPOS compatibility.
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+} );
+
 class bizuno_payments
 {
     public function __construct()
@@ -38,8 +52,8 @@ class bizuno_payments
     {
         if ( ! is_plugin_active ( 'woocommerce/woocommerce.php' ) ) { return; }
         // Load Woocommerce plugins only if WooCommerce is installed and active
-//        bizuno_payfabric_gateway_class();
-//        bizuno_payment_purchase_order_class();
+        bizuno_payfabric_gateway_class();
+        bizuno_payment_purchase_order_class();
 //        WC()->frontend_includes();
 //        if ( class_exists ( 'WC_Payment_Gateway' ) ) { // get instance of WooCommerce for Payfabric
 //            require ( plugin_dir_path ( __FILE__ ) . 'payfabric/classes/class-payfabric-gateway-woocommerce.php' );
@@ -91,3 +105,17 @@ class bizuno_payments
     }
 }
 new bizuno_payments();
+
+//register_activation_hook(__FILE__ , 'bizuno_payments_activate' );
+function bizuno_payments_activate()
+{
+    if (!class_exists('woocommerce') || !function_exists('WC')) {
+        deactivate_plugins(plugin_basename(__FILE__));
+        wp_die( wp_kses_post ( __('PayFabric Gateway for Woocommerce requires Woocommerce version 3.0 or higher', 'bizuno-api'), __('Plugin Activation Error', 'bizuno-api'), array('response' => 200, 'back_link' => TRUE)));
+    }
+    if (version_compare(WC()->version, "3.0", '<')) {
+        deactivate_plugins(plugin_basename(__FILE__));
+        wp_die( wp_kses_post ( __('PayFabric Gateway for Woocommerce requires Woocommerce version 3.0 or higher', 'bizuno-api'), __('Plugin Activation Error', 'bizuno-api'), array('response' => 200, 'back_link' => TRUE)));
+    }
+}
+

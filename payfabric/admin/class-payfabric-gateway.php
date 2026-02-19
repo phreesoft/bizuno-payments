@@ -9,9 +9,7 @@
  * @subpackage PayFabric_Gateway_Woocommerce/admin
  */
 
-if (!defined('ABSPATH')) {
-    exit;
-}
+//if (!defined('ABSPATH')) { exit; }
 
 /**
  * The main-specific functionality of the plugin.
@@ -61,33 +59,31 @@ class PayFabric extends WC_Payment_Gateway
         $this->description = $this->get_option('description');
         $this->testmode = 'yes' === $this->get_option('testmode', 'no');
         $this->icon = apply_filters('bizuno-api', plugin_dir_url(__FILE__) . 'assets/images/logo.png');
-        $this->api_merchant_id = defined('PF_OAUTH2_ID') && !empty(PF_OAUTH2_ID) ? PF_OAUTH2_ID : $this->get_option('api_merchant_id');
-        $this->api_password    = defined('PF_OAUTH2_PW') && !empty(PF_OAUTH2_PW) ? PF_OAUTH2_PW : $this->get_option('api_password');
-        $this->api_success_status = $this->get_option('api_success_status');
-        $this->api_payment_action = $this->get_option('api_payment_action');
-        $this->api_payment_modes = $this->get_option('api_payment_modes');
+        $this->merchant_id = defined('PF_OAUTH2_ID') && !empty(PF_OAUTH2_ID) ? PF_OAUTH2_ID : $this->get_option('merchant_id');
+        $this->password    = defined('PF_OAUTH2_PW') && !empty(PF_OAUTH2_PW) ? PF_OAUTH2_PW : $this->get_option('password');
+        $this->success_status = $this->get_option('success_status');
+        $this->payment_action = $this->get_option('payment_action');
+        $this->payment_modes = $this->get_option('payment_modes');
 
         //Load default Settings
         $this->init_form_fields();
         $this->init_settings();
 
         // define support for refunds
-        $this->supports = array(
-            'refunds'
-        );
+        $this->supports = array( 'refunds' );
     }
 
     /**
      * Payment form on checkout page
      */
-    public function payment_fields()
+/*    public function payment_fields()
     {
         try {
             $description = $this->get_description();
             if ($description) {
                 echo wpautop(wptexturize($description)); // @codingStandardsIgnoreLine.
             }
-            if (2 == $this->api_payment_modes) {
+            if (2 == $this->payment_modes) {
                 $this->enqueue_styles();
                 $this->enqueue_js();
                 $payfabric_request = new PayFabric_Gateway_Request($this);
@@ -96,46 +92,49 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             wc_print_notice($e->getMessage(), 'error');
         }
-    }
+    } */
 
     /**
      * Init settings for gateways.
      */
-    public function init_settings()
+/*    public function init_settings()
     {
         parent::init_settings();
         $this->enabled = !empty($this->settings['enabled']) && 'yes' === $this->settings['enabled'] ? 'yes' : 'no';
-    }
+    } */
 
-    public function logging($message)
+/*    public function logging($message)
     {
         if ('yes' === $this->get_option('log_mode', 'no')) {
             $logger = new WC_Logger();
             $logger->add("$this->id", $message);
         }
-    }
+    } */
 
-    /**
-     * Get admin options template
-     *
-     * @since    1.0.0
-     */
-    public function admin_options()
+/*    public function admin_options()
     {
-        include('payfabric-gateway-admin-settings-template.php');
-    }
+        ?>
+<h3><?php echo wp_kses_post ( $this->method_title ); ?></h3>
+
+<?php echo (!empty($this->method_description)) ? wp_kses_post ( wpautop($this->method_description) ) : ''; ?>
+
+<table class="form-table">
+    <?php $this->generate_settings_html(); ?>
+</table>
+<?php
+    } */
 
     /**
      * Get Form fields array
      *
      * @since    1.0.0
      */
-    public function init_form_fields()
+/*    public function init_form_fields()
     {
         //If direct payment mode then show payment fields directly
-        if (2 == $this->api_payment_modes) { $this->has_fields = true; }
+        if (2 == $this->payment_modes) { $this->has_fields = true; }
         $this->form_fields = include('payfabric-gateway-admin-settings.php');
-    }
+    } */
 
     /**
      * Process the payment and return the result.
@@ -144,12 +143,11 @@ class PayFabric extends WC_Payment_Gateway
      * @return   array
      * @since    1.0.0
      */
-    public function process_payment($order_id)
+/*    public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
-
         //If direct payment mode then do update process
-        if (2 == $this->api_payment_modes) {
+        if (2 == $this->payment_modes) {
             $payfabric_request = new PayFabric_Gateway_Request($this);
             $payfabric_request->do_update_process($this->testmode, $order);
             return array(
@@ -163,27 +161,27 @@ class PayFabric extends WC_Payment_Gateway
                 'redirect' => $order->get_checkout_payment_url(true)
             );
         }
-    }
+    } */
 
     /**
      * Register the stylesheets for frontend Iframe UI
      *
      * @since    1.0.0
      */
-    private function enqueue_styles()
+/*    private function enqueue_styles()
     {
         wp_enqueue_style(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'assets/css/payfabric-gateway-woocommerce.css', array(), $this->version, 'all');
-    }
+    } */
 
     /**
      * Register the stylesheets for frontend Iframe JS
      *
      * @since    2.0.0
      */
-    private function enqueue_js()
+/*    private function enqueue_js()
     {
         wp_enqueue_script(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'assets/js/payfabric-gateway-woocommerce.js', ['jquery'], $this->version, true);
-    }
+    } */
 
     /**
      * Add PayFabric as Woocommerce payment methods.
@@ -203,7 +201,7 @@ class PayFabric extends WC_Payment_Gateway
      * @param int $order_id
      * @since    1.0.0
      */
-    public function receipt_page($order_id)
+/*    public function receipt_page($order_id)
     {
         try {
             $this->enqueue_styles();
@@ -215,10 +213,10 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             wc_print_notice($e->getMessage(), 'error');
         }
-    }
+    } */
 
     //http://localhost/wordpress/index.php/checkout/order-received/721/?wcapi=payfabric&order_id=721&TrxKey=22062301958907&key=wc_order_jopIHjPEamN1y
-    public function payfabric_response_handler()
+/*    public function payfabric_response_handler()
     {
         try {
             if (isset($_GET['wcapi']) && isset($_GET['TrxKey']) && empty($_GET['wc-ajax'])) {
@@ -229,10 +227,10 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             return $e->getMessage();
         }
-    }
+    } */
 
     //customize admin order detail page to show EVO transaction ID
-    public function show_evo_transaction_id($order)
+/*    public function show_evo_transaction_id($order)
     {
         if($order->get_payment_method() == 'payfabric') {
             $transaction_id = get_post_meta($order->get_id(), '_transaction_id', true);
@@ -240,11 +238,11 @@ class PayFabric extends WC_Payment_Gateway
                 echo wp_kses_post ( '<h3>' . $this->method_title . ' ID </h3>' );
                 echo wp_kses_post ( "<p>$transaction_id</p>" );
             }
-        }
-    }
+        } 
+    } */
 
     //the method to process refund
-    public function process_refund($order_id, $amount = null, $reason = '')
+/*    public function process_refund($order_id, $amount = null, $reason = '')
     {
         try {
             $order = wc_get_order($order_id);
@@ -260,10 +258,10 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             return $e->getMessage();
         }
-    }
+    } */
 
     //the method to response to the Gateway post callback when the user complete the payment
-    public function handle_call_back()
+/*    public function handle_call_back()
     {
         try {
             $raw_post = file_get_contents('php://input');
@@ -281,14 +279,14 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             return $e->getMessage();
         }
-    }
+    } */
 
     /**
      * Capture payment when the order is changed from on-hold to complete or processing
      *
      * @param int $order_id
      */
-    public function capture_payment($order_id)
+/*    public function capture_payment($order_id)
     {
         $order = wc_get_order($order_id);
         if ($order->get_payment_method() == 'payfabric') {
@@ -301,9 +299,9 @@ class PayFabric extends WC_Payment_Gateway
                 $payfabric_request->do_capture_process($this->testmode, $order, $merchantTxId, $amount);
             }
         }
-    }
+    } */
 
-    public function maybe_capture_charge($order)
+/*    public function maybe_capture_charge($order)
     {
         try {
             if (!is_object($order)) {
@@ -317,10 +315,10 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             return $e->getMessage();
         }
-    }
+    } */
 
     // add a drop down option of Capture Online button for the Order actions area
-    public function add_capture_charge_order_action($actions)
+/*    public function add_capture_charge_order_action($actions)
     {
         if (!isset($_REQUEST['post'])) {
             return $actions;
@@ -345,10 +343,10 @@ class PayFabric extends WC_Payment_Gateway
         $actions['payfabric_capture_charge'] = esc_html__('Capture Online', 'bizuno-api');
 
         return $actions;
-    }
+    } */
 
     // add a drop down option of VOID Online button for the Order actions area
-    public function add_void_charge_order_action($actions)
+/*    public function add_void_charge_order_action($actions)
     {
         if (!isset($_REQUEST['post'])) {
             return $actions;
@@ -373,14 +371,14 @@ class PayFabric extends WC_Payment_Gateway
         $actions['payfabric_void_charge'] = esc_html__('VOID Online', 'bizuno-api' );
 
         return $actions;
-    }
+    } */
 
     /**
      * Cancel authorization
      *
      * @param int $order_id
      */
-    public function cancel_payment($order_id)
+/*    public function cancel_payment($order_id)
     {
         $order = wc_get_order($order_id);
         if ($order->get_payment_method() == 'payfabric') {
@@ -392,9 +390,9 @@ class PayFabric extends WC_Payment_Gateway
                 $payfabric_request->do_void_process($this->testmode, $order, $merchantTxId);
             }
         }
-    }
+    } */
 
-    public function maybe_void_charge($order)
+/*    public function maybe_void_charge($order)
     {
         try {
             if (!is_object($order)) {
@@ -408,25 +406,25 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             return $e->getMessage();
         }
-    }
+    } */
 
     /**
      * Processes and saves options.
      * If there is an error thrown, will continue to save and validate fields, but will leave the erroring field out.
      * @return bool was anything saved?
      */
-    public function process_admin_options()
+/*    public function process_admin_options()
     {
         try {
             $post_data = $this->get_post_data();
-            $api_merchant_id = $this->get_field_key('api_merchant_id');
-            $api_merchant_password = $this->get_field_key('api_password');
+            $merchant_id = $this->get_field_key('merchant_id');
+            $api_merchant_password = $this->get_field_key('password');
             $api_testmode = $this->get_field_key('testmode');
-            $api_payment_action = $this->get_field_key('api_payment_action');
-            $merchant_id       = defined('PF_OAUTH2_ID') && !empty(PF_OAUTH2_ID) ? PF_OAUTH2_ID : (isset($post_data[$api_merchant_id]) ? $post_data[$api_merchant_id] : null);
+            $payment_action = $this->get_field_key('payment_action');
+            $merchant_id       = defined('PF_OAUTH2_ID') && !empty(PF_OAUTH2_ID) ? PF_OAUTH2_ID : (isset($post_data[$merchant_id]) ? $post_data[$merchant_id] : null);
             $merchant_password = defined('PF_OAUTH2_PW') && !empty(PF_OAUTH2_PW) ? PF_OAUTH2_PW : (isset($post_data[$api_merchant_password]) ? $post_data[$api_merchant_password] : null);
             $testmode = isset($post_data[$api_testmode]) ? $post_data[$api_testmode] : null;
-            $payment_action = isset($post_data[$api_payment_action]) ? $post_data[$api_payment_action] : null;
+            $payment_action = isset($post_data[$payment_action]) ? $post_data[$payment_action] : null;
             if (empty($merchant_id) || empty($merchant_password)) {
                 WC_Admin_Settings::add_error(__('Device ID or Password cannot be blank', 'bizuno-api'));
             } else {
@@ -437,9 +435,9 @@ class PayFabric extends WC_Payment_Gateway
         } catch (Exception $e) {
             WC_Admin_Settings::add_error($e->getMessage());
         }
-    }
+    } */
 
-    public function get_session()
+/*    public function get_session()
     {
         echo wp_kses_post ( wp_send_json_success(
             array(
@@ -447,13 +445,13 @@ class PayFabric extends WC_Payment_Gateway
             )
         ) );
         wp_die();
-    }
+    } */
 
-    public function my_orders_actions($actions)
+/*    public function my_orders_actions($actions)
     {
-        if (2 == $this->api_payment_modes) {
+        if (2 == $this->payment_modes) {
             unset($actions['pay']);
         }
         return $actions;
-    }
+    } */
 }

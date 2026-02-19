@@ -182,8 +182,8 @@ class PayFabric_Gateway_Request
     //Execute payment synchronization callback
     public function generate_check_request_form($merchantTxId, $sandbox = false)
     {
-        if ($this->gateway->api_merchant_id === null || $this->gateway->api_merchant_id === ''
-            || $this->gateway->api_password === null || $this->gateway->api_password === '') {
+        if ($this->gateway->merchant_id === null || $this->gateway->merchant_id === ''
+            || $this->gateway->password === null || $this->gateway->password === '') {
             return false;
         }
         try {
@@ -191,7 +191,7 @@ class PayFabric_Gateway_Request
             $maxiPago->setLogger(PayFabric_LOG_DIR, PayFabric_LOG_SEVERITY);
 
             // Set your credentials before any other transaction methods
-            $maxiPago->setCredentials($this->gateway->api_merchant_id, $this->gateway->api_password);
+            $maxiPago->setCredentials($this->gateway->merchant_id, $this->gateway->password);
 
             $maxiPago->setDebug(PayFabric_DEBUG);
             $maxiPago->setEnvironment($sandbox);
@@ -239,7 +239,7 @@ class PayFabric_Gateway_Request
                 update_post_meta($order->get_id(), '_payment_status', 'completed');
                 $order->payment_complete();
                 // commented out by Phreesoft to prevent orders from being tagged 'complete'
-//                    if ($this->gateway->api_success_status == '1') {
+//                    if ($this->gateway->success_status == '1') {
 //                        $order->update_status('completed', sprintf(__('Card payment completed.', 'bizuno-api')));
 //                    }
                 //                 do_action( 'woocommerce_payment_complete', $order_id);
@@ -312,7 +312,7 @@ successCallback:handleResult, failureCallback:handleResult });
         $maxiPago->setLogger(PayFabric_LOG_DIR, PayFabric_LOG_SEVERITY);
 
         // Set your credentials before any other transaction methods
-        $maxiPago->setCredentials($this->gateway->api_merchant_id, $this->gateway->api_password);
+        $maxiPago->setCredentials($this->gateway->merchant_id, $this->gateway->password);
 
         $maxiPago->setDebug(PayFabric_DEBUG);
         $maxiPago->setEnvironment($sandbox);
@@ -334,7 +334,7 @@ successCallback:handleResult, failureCallback:handleResult });
             $customerId = $this->bizuno_get_wallet_link_id($customerId);
         }
 
-        if (2 == $this->gateway->api_payment_modes) {
+        if (2 == $this->gateway->payment_modes) {
             $data = array(
                 "Amount" => WC()->cart->total, // REQUIRED - Transaction amount in US format //
                 "Currency" => get_woocommerce_currency(),
@@ -344,7 +344,7 @@ successCallback:handleResult, failureCallback:handleResult });
             $data = $this->get_payfabric_gateway_post_args($order);
         }
 
-        if ($this->gateway->api_payment_action) {
+        if ($this->gateway->payment_action) {
             $maxiPago->creditCardAuth($data);
         } else {
             $maxiPago->creditCardSale($data);
@@ -365,8 +365,8 @@ successCallback:handleResult, failureCallback:handleResult });
             throw new UnexpectedValueException( wp_kses_post ( $maxiPago->response ), 503);
         }
 
-        switch ($this->gateway->api_payment_modes) {
-            //api_payment_modes : array('Iframe','Redirect', 'direct')
+        switch ($this->gateway->payment_modes) {
+            //payment_modes : array('Iframe','Redirect', 'direct')
             case '0': ?>
 <form id="payForm" action="<?php echo esc_url ( $return_url ); ?>" method="get">
     <input type="hidden" name="wcapi" value="payfabric"/>
@@ -407,8 +407,8 @@ successCallback:handleResult, failureCallback:handleResult });
     //Do the payment update process after place order
     public function do_update_process($sandbox, $order)
     {
-        if ($this->gateway->api_merchant_id === null || $this->gateway->api_merchant_id === ''
-            || $this->gateway->api_password === null || $this->gateway->api_password === '') {
+        if ($this->gateway->merchant_id === null || $this->gateway->merchant_id === ''
+            || $this->gateway->password === null || $this->gateway->password === '') {
             throw new UnexpectedValueException('Miss merchant configuration info', 503);
         }
 
@@ -416,7 +416,7 @@ successCallback:handleResult, failureCallback:handleResult });
         $maxiPago->setLogger(PayFabric_LOG_DIR, PayFabric_LOG_SEVERITY);
 
         // Set your credentials before any other transaction methods
-        $maxiPago->setCredentials($this->gateway->api_merchant_id, $this->gateway->api_password);
+        $maxiPago->setCredentials($this->gateway->merchant_id, $this->gateway->password);
 
         $maxiPago->setDebug(PayFabric_DEBUG);
         $maxiPago->setEnvironment($sandbox);
@@ -437,8 +437,8 @@ successCallback:handleResult, failureCallback:handleResult });
     //Do the payment refund process
     public function do_refund_process($sandbox, $merchantTxId, $amount)
     {
-        if ($this->gateway->api_merchant_id === null || $this->gateway->api_merchant_id === ''
-            || $this->gateway->api_password === null || $this->gateway->api_password === '') {
+        if ($this->gateway->merchant_id === null || $this->gateway->merchant_id === ''
+            || $this->gateway->password === null || $this->gateway->password === '') {
             return new WP_Error('invalid_order', 'miss merchant configuration info');
         }
 
@@ -446,7 +446,7 @@ successCallback:handleResult, failureCallback:handleResult });
         $maxiPago->setLogger(PayFabric_LOG_DIR, PayFabric_LOG_SEVERITY);
 
         // Set your credentials before any other transaction methods
-        $maxiPago->setCredentials($this->gateway->api_merchant_id, $this->gateway->api_password);
+        $maxiPago->setCredentials($this->gateway->merchant_id, $this->gateway->password);
 
         $maxiPago->setDebug(PayFabric_DEBUG);
         $maxiPago->setEnvironment($sandbox);
@@ -468,8 +468,8 @@ successCallback:handleResult, failureCallback:handleResult });
     //Do the payment capture process
     public function do_capture_process($sandbox, $order, $merchantTxId, $amount)
     {
-        if ($this->gateway->api_merchant_id === null || $this->gateway->api_merchant_id === ''
-            || $this->gateway->api_password === null || $this->gateway->api_password === '') {
+        if ($this->gateway->merchant_id === null || $this->gateway->merchant_id === ''
+            || $this->gateway->password === null || $this->gateway->password === '') {
             return new WP_Error('invalid_order', 'miss merchant configuration info');
         }
 
@@ -477,7 +477,7 @@ successCallback:handleResult, failureCallback:handleResult });
         $maxiPago->setLogger(PayFabric_LOG_DIR, PayFabric_LOG_SEVERITY);
 
         // Set your credentials before any other transaction methods
-        $maxiPago->setCredentials($this->gateway->api_merchant_id, $this->gateway->api_password);
+        $maxiPago->setCredentials($this->gateway->merchant_id, $this->gateway->password);
 
         $maxiPago->setDebug(PayFabric_DEBUG);
         $maxiPago->setEnvironment($sandbox);
@@ -489,7 +489,7 @@ successCallback:handleResult, failureCallback:handleResult });
             $order->add_order_note ( sprintf( 'Capture charge complete (Amount: %s)', $amount));
             $order->update_meta_data('_payment_status', 'completed');
             $order->payment_complete();
-            if ($this->gateway->api_success_status == '1') {
+            if ($this->gateway->success_status == '1') {
                 $order->update_status('completed', sprintf(__('Card payment completed.', 'bizuno-api')));
             }
             $order_id = $order->get_id();
@@ -507,8 +507,8 @@ successCallback:handleResult, failureCallback:handleResult });
     //Do the payment VOID process
     public function do_void_process($sandbox, $order, $merchantTxId)
     {
-        if ($this->gateway->api_merchant_id === null || $this->gateway->api_merchant_id === ''
-            || $this->gateway->api_password === null || $this->gateway->api_password === '') {
+        if ($this->gateway->merchant_id === null || $this->gateway->merchant_id === ''
+            || $this->gateway->password === null || $this->gateway->password === '') {
             return new WP_Error('invalid_order', 'miss merchant configuration info');
         }
 
@@ -516,7 +516,7 @@ successCallback:handleResult, failureCallback:handleResult });
         $maxiPago->setLogger(PayFabric_LOG_DIR, PayFabric_LOG_SEVERITY);
 
         // Set your credentials before any other transaction methods
-        $maxiPago->setCredentials($this->gateway->api_merchant_id, $this->gateway->api_password);
+        $maxiPago->setCredentials($this->gateway->merchant_id, $this->gateway->password);
 
         $maxiPago->setDebug(PayFabric_DEBUG);
         $maxiPago->setEnvironment($sandbox);
@@ -535,13 +535,13 @@ successCallback:handleResult, failureCallback:handleResult });
     }
 
     //Do the payment gateway check
-    public function do_check_gateway($sandbox, $api_merchant_id, $api_password, $payment_action)
+    public function do_check_gateway($sandbox, $merchant_id, $password, $payment_action)
     {
         $maxiPago = new payFabric_payments;
         $maxiPago->setLogger(PayFabric_LOG_DIR, PayFabric_LOG_SEVERITY);
 
         // Set your credentials before any other transaction methods
-        $maxiPago->setCredentials($api_merchant_id, $api_password);
+        $maxiPago->setCredentials($merchant_id, $password);
 
         $maxiPago->setDebug(PayFabric_DEBUG);
         $maxiPago->setEnvironment($sandbox);
