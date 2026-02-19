@@ -27,20 +27,23 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-//require_once dirname(__FILE__) . '/admin/class-payfabric-gateway.php'; // This is rolled into this class
-require_once dirname(__FILE__) . '/admin/class-payfabric-gateway-request.php';
+//require_once dirname(__FILE__) . '/class-payfabric-gateway.php'; // This is rolled into this class
+require_once dirname(__FILE__) . '/class-payfabric-gateway-request.php';
+
+define('BIZUNO_PAYMENTS_PAYFABRIC_NAME',    'Bizuno-PayFabric-Gateway');
+define('BIZUNO_PAYMENTS_PAYFABRIC_VERSION', '3.0.0');
 
 /*Define live and test gateway host */
-!defined('LIVEGATEWAY') && define('LIVEGATEWAY', 'https://www.payfabric.com');
-!defined('TESTGATEWAY') && define('TESTGATEWAY', 'https://sandbox.payfabric.com');
+define('LIVEGATEWAY', 'https://www.payfabric.com');
+define('TESTGATEWAY', 'https://sandbox.payfabric.com');
 
 /*
 * Define log dir, severity level of logging mode and whether enable on-screen debug ouput.
 * PLEASE DO NOT USE "DEBUG" LOGGING MODE IN PRODUCTION
 */
-!defined('PayFabric_LOG_SEVERITY') && define('PayFabric_LOG_SEVERITY', 'INFO');
-!defined('PayFabric_LOG_DIR')      && define('PayFabric_LOG_DIR',      dirname(__FILE__) . '/logs');
-!defined('PayFabric_DEBUG')        && define('PayFabric_DEBUG',        false);
+define('PayFabric_LOG_SEVERITY', 'INFO');
+define('PayFabric_LOG_DIR',      dirname(__FILE__) . '/logs');
+define('PayFabric_DEBUG',        false);
 
 function bizuno_payfabric_gateway_class()
 {
@@ -49,28 +52,33 @@ function bizuno_payfabric_gateway_class()
         public  $domain = 'bizuno-payfabric';
         private $show_log_field   = '0'; // Define the control parameter value to determine whether the LOG functionality show or not
         private $show_auth_fields = '1'; // Define the control parameter value to determine whether the AUTH functionality show or not
-        private $integration_show = '1'; // Define whether integration mode should be shown or not, 1 means to show, 0 means not 
+        private $integration_show = '1'; // Define whether integration mode should be shown or not, 1 means to show, 0 means not
+        
+        public  $testmode;
+        public  $merchant_id;
+        public  $password;
+        public  $success_status;
+        public  $payment_action;
+        public  $payment_modes;
 
-
-        public function __construct() {
-return;
+        public function __construct()
+        {
             $this->id                 = 'payfabric';
-            $this->icon               = apply_filters('woocommerce_payfabric_gateway_icon', '');
+            $this->icon               = plugins_url( 'assets/images/logo.png', __FILE__ );
             $this->method_title       = __( 'PayFabric', 'bizuno-payfabric' );
-            $this->method_description = __( 'Allows payments with payfabric gateway.', 'bizuno-payments' );
+            $this->method_description = __( 'Allows credit card and e-check payments with the payfabric gateway.', 'bizuno-payments' );
             // Load the settings.
             $this->init_form_fields();
             $this->init_settings();
             // Define user set variables
-            $this->title = $this->get_option('title');
-            $this->description = $this->get_option('description');
-            $this->testmode = 'yes' === $this->get_option('testmode', 'no');
-            $this->icon = apply_filters('bizuno-api', plugin_dir_url(__FILE__) . 'assets/images/logo.png');
-            $this->merchant_id = defined('PF_OAUTH2_ID') && !empty(PF_OAUTH2_ID) ? PF_OAUTH2_ID : $this->get_option('merchant_id');
-            $this->password    = defined('PF_OAUTH2_PW') && !empty(PF_OAUTH2_PW) ? PF_OAUTH2_PW : $this->get_option('password');
+            $this->title          = $this->get_option('title');
+            $this->description    = $this->get_option('description');
+            $this->testmode       = 'yes' === $this->get_option('testmode', 'no');
+            $this->merchant_id    = defined('PF_OAUTH2_ID') && !empty(PF_OAUTH2_ID) ? PF_OAUTH2_ID : $this->get_option('merchant_id');
+            $this->password       = defined('PF_OAUTH2_PW') && !empty(PF_OAUTH2_PW) ? PF_OAUTH2_PW : $this->get_option('password');
             $this->success_status = $this->get_option('success_status');
             $this->payment_action = $this->get_option('payment_action');
-            $this->payment_modes = $this->get_option('payment_modes');
+            $this->payment_modes  = $this->get_option('payment_modes');
             
             $this->supports = array( 'blocks', 'refunds' ); // 'subscriptions', // If you support it.
             
@@ -83,19 +91,20 @@ return;
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
             add_action( 'woocommerce_thankyou_' . $this->id,                        [ $this, 'thankyou_page' ] );
             add_action( 'woocommerce_email_before_order_table',                     [ $this, 'email_instructions' ], 10, 3 ); // Customer Emails
-            add_action('woocommerce_receipt_payfabric',                             [ $this, 'receipt_page' ] ); // Generate button or iframe ready to pay on receipt page
-            add_action('wp',                                                        [ $this, 'payfabric_response_handler' ] ); // Payment response handler get
-            add_action('wp_ajax_get_session',                                       [ $this, 'get_session' ] ); // Ajax request
-            add_action('wp_ajax_nopriv_get_session',                                [ $this, 'get_session' ] ); // Ajax request
-            add_action('woocommerce_my_account_my_orders_actions',                  [ $this, 'my_orders_actions' ] ); // My account actions
-            add_action('woocommerce_admin_order_data_after_shipping_address',       [ $this, 'show_evo_transaction_id']); // Customize admin order detail page to show transaction ID
-            add_action('woocommerce_api_payfabric',                                 [ $this, 'handle_call_back' ] ); // Payment response handler if a post request
-            add_action('woocommerce_order_action_payfabric_capture_charge',         [ $this, 'maybe_capture_charge' ] ); // Capture when the Capture Online is submitted
-            add_action('woocommerce_order_action_payfabric_void_charge',            [ $this, 'maybe_void_charge' ] ); // Void when the Void Online is submitted
+            add_action( 'woocommerce_receipt_payfabric',                            [ $this, 'receipt_page' ] ); // Generate button or iframe ready to pay on receipt page
+            add_action( 'wp',                                                       [ $this, 'payfabric_response_handler' ] ); // Payment response handler get
+            add_action( 'wp_ajax_get_session',                                      [ $this, 'get_session' ] ); // Ajax request
+            add_action( 'wp_ajax_nopriv_get_session',                               [ $this, 'get_session' ] ); // Ajax request
+            add_action( 'woocommerce_my_account_my_orders_actions',                 [ $this, 'my_orders_actions' ] ); // My account actions
+            add_action( 'woocommerce_admin_order_data_after_shipping_address',      [ $this, 'show_evo_transaction_id']); // Customize admin order detail page to show transaction ID
+            add_action( 'woocommerce_api_payfabric',                                [ $this, 'handle_call_back' ] ); // Payment response handler if a post request
+            add_action( 'woocommerce_order_action_payfabric_capture_charge',        [ $this, 'maybe_capture_charge' ] ); // Capture when the Capture Online is submitted
+            add_action( 'woocommerce_order_action_payfabric_void_charge',           [ $this, 'maybe_void_charge' ] ); // Void when the Void Online is submitted
             // Filters
-//          add_filter('woocommerce_payment_gateways',                              [ $this, 'add_new_gateway' ] ); // Handled in Bizuno Payments main class
-            add_filter('woocommerce_order_actions',                                 [ $this, 'add_void_charge_order_action' ] ); // add the VOID Online Order actions
-            add_filter('woocommerce_order_actions',                                 [ $this, 'add_capture_charge_order_action' ] ); // add the Capture Online Order actions
+            add_filter( 'woocommerce_get_return_url',                               [ $this, 'process_payment_return_url' ], 10, 2 );
+//          add_filter( 'woocommerce_payment_gateways',                             [ $this, 'add_new_gateway' ] ); // Handled in Bizuno Payments main class
+            add_filter( 'woocommerce_order_actions',                                [ $this, 'add_void_charge_order_action' ] ); // add the VOID Online Order actions
+            add_filter( 'woocommerce_order_actions',                                [ $this, 'add_capture_charge_order_action' ] ); // add the Capture Online Order actions
         }
 
         public function init_form_fields()
@@ -222,12 +231,12 @@ return;
 
         private function enqueue_styles()
         {
-            wp_enqueue_style(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'admin/assets/css/payfabric-gateway-woocommerce.css', array(), $this->version, 'all');
+            wp_enqueue_style(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'assets/css/payfabric-gateway-woocommerce.css', array(), $this->version, 'all');
         }
 
         private function enqueue_js()
         {
-            wp_enqueue_script(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'admin/assets/js/payfabric-gateway-woocommerce.js', ['jquery'], $this->version, true);
+            wp_enqueue_script(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'assets/js/payfabric-gateway-woocommerce.js', ['jquery'], $this->version, true);
         }
 
         public function admin_options()
@@ -243,13 +252,13 @@ return;
         {
             try {
                 $post_data = $this->get_post_data();
-                $merchant_id = $this->get_field_key('merchant_id');
-                $merchant_password = $this->get_field_key('password');
-                $testmode = $this->get_field_key('testmode');
-                $payment_action = $this->get_field_key('payment_action');
+//                $merchant_id = $this->get_field_key('merchant_id');
+//                $merchant_password = $this->get_field_key('password');
+//                $testmode = $this->get_field_key('testmode');
+//                $payment_action = $this->get_field_key('payment_action');
                 $merchant_id       = defined('PF_OAUTH2_ID') && !empty(PF_OAUTH2_ID) ? PF_OAUTH2_ID : (isset($post_data[$merchant_id]) ? $post_data[$merchant_id] : null);
-                $merchant_password = defined('PF_OAUTH2_PW') && !empty(PF_OAUTH2_PW) ? PF_OAUTH2_PW : (isset($post_data[$api_merchant_password]) ? $post_data[$api_merchant_password] : null);
-                $testmode = isset($post_data[$api_testmode]) ? $post_data[$api_testmode] : null;
+                $merchant_password = defined('PF_OAUTH2_PW') && !empty(PF_OAUTH2_PW) ? PF_OAUTH2_PW : (isset($post_data[$merchant_password]) ? $post_data[$merchant_password] : null);
+                $testmode = isset($post_data[$testmode]) ? $post_data[$testmode] : null;
                 $payment_action = isset($post_data[$payment_action]) ? $post_data[$payment_action] : null;
                 if (empty($merchant_id) || empty($merchant_password)) {
                     WC_Admin_Settings::add_error(__('Device ID or Password cannot be blank', 'bizuno-api'));
@@ -265,14 +274,14 @@ return;
 
         public function thankyou_page()
         {
-            if ( $this->instructions ) { echo wp_kses_post ( wpautop( wptexturize( $this->instructions ) ) ); }
+//            if ( $this->instructions ) { echo wp_kses_post ( wpautop( wptexturize( $this->instructions ) ) ); }
         }
 
         public function email_instructions( $order, $sent_to_admin )// removed last param: , $plain_text = false
         {
-            if ( $this->instructions && ! $sent_to_admin && 'custom' === $order->payment_method && $order->has_status( 'on-hold' ) ) {
-                echo wp_kses_post ( wpautop ( wptexturize( $this->instructions ) ) ) . PHP_EOL;
-            }
+//            if ( $this->instructions && ! $sent_to_admin && 'custom' === $order->payment_method && $order->has_status( 'on-hold' ) ) {
+//                echo wp_kses_post ( wpautop ( wptexturize( $this->instructions ) ) ) . PHP_EOL;
+//            }
         }
 
         public function process_payment($order_id)
@@ -302,7 +311,18 @@ return;
             // Return thankyou redirect
             return ['result'=>'success', 'redirect'=>$this->get_return_url( $order )];
         } */
-        
+
+        public function process_payment_return_url( $url, $order )
+        {
+            // Example: Add a custom parameter
+//            $url = add_query_arg( 'utm_source', 'payment_success', $url );
+
+            // Or redirect to a custom thank-you page
+            // $url = home_url( '/custom-thank-you/?order=' . $order->get_id() );
+
+            return $url;
+        }
+
         public function receipt_page($order_id)
         {
             try {

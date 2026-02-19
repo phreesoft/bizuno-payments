@@ -4,6 +4,8 @@
  */
 class payFabric_Request extends payFabric_Builder
 {
+    public $xmlResponse;
+
     protected function sendXml()
     {
         if (is_object(payFabric_RequestBase::$logger)) {

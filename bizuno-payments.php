@@ -18,7 +18,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 require_once ( dirname(__FILE__) . '/payfabric/payfabric.php' );
-require_once ( dirname(__FILE__) . '/purchase_order.php' );
+require_once ( dirname(__FILE__) . '/purchase_order/purchase_order.php' );
 
 add_action( 'before_woocommerce_init', function() {
     if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
@@ -64,7 +64,7 @@ class bizuno_payments
     public function bizuno_payments_add_to_gateways( $gateways )
     {
         $gateways[] = 'WC_Gateway_PayFabric';
-        $gateways[] = 'WC_Gateway_PurchOrder';
+        $gateways[] = 'WC_Gateway_PurchaseOrder';
         return $gateways;
     }
     

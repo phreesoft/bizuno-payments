@@ -30,10 +30,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bizuno_payment_purchase_order_class() {
     class WC_Gateway_PurchaseOrder extends WC_Payment_Gateway
     {
+        public $instructions;
+        
         public function __construct()
         {
             $this->id                 = 'purchorder';
-            //$this->icon             = apply_filters( 'bizuno_api_purchorder_icon', '' );
+            $this->icon               = plugins_url( 'po-logo.png', __FILE__ );
             $this->has_fields         = false;
             $this->method_title       = _x( 'Purchase Order payments', 'Purchase Order payment method', 'bizuno-payments' );
             $this->method_description = __( 'Accept payment via business Purchase Order. This offline gateway can also be useful to test purchases.', 'bizuno-payments' );

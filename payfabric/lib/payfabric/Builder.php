@@ -2,9 +2,10 @@
 
 class payFabric_Builder extends payFabric_RequestBase
 {
-
     public $_data = array();
-
+    public $merchantId;
+    public $merchantKey;
+    
     public function __construct($array)
     {
         if (strlen($array["merchantId"]) > 0) {
@@ -177,11 +178,11 @@ class payFabric_Builder extends payFabric_RequestBase
             }
         }
         //Set UserDefined
-        if (strlen($this->pluginName) > 0 && strlen($this->pluginVersion) > 0) {
-            $this->_data["Document"]["UserDefined"] = array(
-                array('Name' => 'PluginName', "Value" => $this->pluginName),
-                array('Name' => 'PluginVersion', "Value" => $this->pluginVersion)
-            );
+        if (defined('BIZUNO_PAYMENTS_PAYFABRIC_NAME') > 0 && defined('BIZUNO_PAYMENTS_PAYFABRIC_VERSION') > 0) {
+            $this->_data["Document"]["UserDefined"] = [
+                ['Name' => 'PluginName',    "Value" => BIZUNO_PAYMENTS_PAYFABRIC_NAME],
+                ['Name' => 'PluginVersion', "Value" => BIZUNO_PAYMENTS_PAYFABRIC_VERSION]
+            ];
         }
     }
 
