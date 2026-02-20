@@ -1,3 +1,12 @@
+console.log('PayFabric JS loaded - mode:', payfabricDebug.mode);
+jQuery(document).ready(function($) {
+    console.log('PayFabric ready - looking for hosted fields container');
+    // Add logs around tokenization / submit
+    $(document.body).on('submit_checkout', function() {
+        console.log('Checkout submit triggered - tokenizing...');
+    });
+});
+
 jQuery(function ($) {
     $('form.checkout').on("checkout_place_order_success", function (event, data) {
         if (data.key != undefined) {

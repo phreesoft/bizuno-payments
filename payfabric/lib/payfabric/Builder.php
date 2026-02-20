@@ -20,39 +20,132 @@ class payFabric_Builder extends payFabric_RequestBase
         }
     }
 
-    protected function setToken()
-    {
-        if (strlen($this->Audience) > 0) {
-            $this->_data["Audience"] = $this->Audience;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'Audience' cannot be null.");
-        }
-        if (strlen($this->Subject) > 0) {
-            $this->_data["Subject"] = $this->Subject;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'Subject' cannot be null.");
-        }
+protected function setToken()
+{
+    if (!empty($this->Audience)) {
+        $this->_data["Audience"] = $this->Audience;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'Audience' cannot be null.");
     }
 
-    protected function setRefund()
-    {
-        if (strlen($this->type) > 0) {
-            $this->_data["Type"] = $this->type;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'Type' cannot be null.");
-        }
-        if (isset($this->Amount) && is_numeric($this->Amount)) {
-            $this->_data["Amount"] = $this->Amount;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'Amount' is invalid.");
-        }
-        if (strlen($this->ReferenceKey) > 0) {
-            $this->_data["ReferenceKey"] = $this->ReferenceKey;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'ReferenceKey' cannot be null.");
-        }
+    if (!empty($this->Subject)) {
+        $this->_data["Subject"] = $this->Subject;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'Subject' cannot be null.");
+    }
+}
+
+protected function setRefund()
+{
+    if (!empty($this->type)) {
+        $this->_data["Type"] = $this->type;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'Type' cannot be null.");
     }
 
+    if (isset($this->Amount) && is_numeric($this->Amount)) {
+        $this->_data["Amount"] = $this->Amount;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'Amount' is invalid.");
+    }
+
+    if (!empty($this->ReferenceKey)) {
+        $this->_data["ReferenceKey"] = $this->ReferenceKey;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'ReferenceKey' cannot be null.");
+    }
+}
+
+protected function setOrder()
+{
+    if (!empty($this->type)) {
+        $this->_data["Type"] = $this->type;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'Type' cannot be null.");
+    }
+
+    if (!empty($this->id)) {
+        $this->_data["TrxUserDefine1"] = $this->id;
+    }
+
+    if (isset($this->Amount) && is_numeric($this->Amount)) {
+        $this->_data["Amount"] = $this->Amount;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'Amount' is invalid.");
+    }
+
+    if (!empty($this->Currency)) {
+        $this->_data["Currency"] = $this->Currency;
+    } else {
+        throw new InvalidArgumentException("[PayFabric Class] Field 'Currency' cannot be null.");
+    }
+
+    if (!empty($this->customerId)) {
+        $this->bizuno_get_wallet_id();
+        $this->_data["Customer"] = $this->customerId;
+    }
+
+    $this->setAddress();
+}
+
+protected function setAddress()
+{
+    if (!empty($this->billingCity)) {
+        $this->_data['Document']["DefaultBillTo"]["City"] = $this->billingCity;
+    }
+    if (!empty($this->billingCountry)) {
+        $this->_data['Document']["DefaultBillTo"]["Country"] = $this->billingCountry;
+    }
+    if (!empty($this->customerId)) {
+        $this->_data['Document']["DefaultBillTo"]["Customer"] = $this->customerId;
+    }
+    if (!empty($this->billingEmail)) {
+        $this->_data['Document']["DefaultBillTo"]["Email"] = $this->billingEmail;
+    }
+    if (!empty($this->billingAddress1)) {
+        $this->_data['Document']["DefaultBillTo"]["Line1"] = $this->billingAddress1;
+    }
+    if (!empty($this->billingAddress2)) {
+        $this->_data['Document']["DefaultBillTo"]["Line2"] = $this->billingAddress2;
+    }
+    if (!empty($this->billingPhone)) {
+        $this->_data['Document']["DefaultBillTo"]["Phone"] = $this->billingPhone;
+    }
+    if (!empty($this->billingState)) {
+        $this->_data['Document']["DefaultBillTo"]["State"] = $this->billingState;
+    }
+    if (!empty($this->billingPostalCode)) {
+        $this->_data['Document']["DefaultBillTo"]["Zip"] = $this->billingPostalCode;
+    }
+
+    if (!empty($this->shippingCity)) {
+        $this->_data["Shipto"]["City"] = $this->shippingCity;
+    }
+    if (!empty($this->shippingCountry)) {
+        $this->_data["Shipto"]["Country"] = $this->shippingCountry;
+    }
+    if (!empty($this->customerId)) {
+        $this->_data["Shipto"]["Customer"] = $this->customerId;
+    }
+    if (!empty($this->shippingEmail)) {
+        $this->_data["Shipto"]["Email"] = $this->shippingEmail;
+    }
+    if (!empty($this->shippingAddress1)) {
+        $this->_data["Shipto"]["Line1"] = $this->shippingAddress1;
+    }
+    if (!empty($this->shippingAddress2)) {
+        $this->_data["Shipto"]["Line2"] = $this->shippingAddress2;
+    }
+    if (!empty($this->shippingPhone)) {
+        $this->_data["Shipto"]["Phone"] = $this->shippingPhone;
+    }
+    if (!empty($this->shippingState)) {
+        $this->_data["Shipto"]["State"] = $this->shippingState;
+    }
+    if (!empty($this->shippingPostalCode)) {
+        $this->_data["Shipto"]["Zip"] = $this->shippingPostalCode;
+    }
+}
     /**
      * 2023-10-30 Added by PhreeSoft to link the WooCommerce Customer ID to the Bizuno Wallet (Customer) ID
      */
@@ -66,93 +159,6 @@ class payFabric_Builder extends payFabric_RequestBase
         }
     }
 
-    protected function setOrder()
-    {
-        if (strlen($this->type) > 0) {
-            $this->_data["Type"] = $this->type;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'Type' cannot be null.");
-        }
-        if (strlen($this->id) > 0) {
-            $this->_data["TrxUserDefine1"] = $this->id;
-        }
-        if (isset($this->Amount) && is_numeric($this->Amount)) {
-            $this->_data["Amount"] = $this->Amount;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'Amount' is invalid.");
-        }
-        if (strlen($this->Currency) > 0) {
-            $this->_data["Currency"] = $this->Currency;
-        } else {
-            throw new InvalidArgumentException("[PayFabric Class] Field 'Currency' cannot be null.");
-        }
-        if (strlen($this->customerId) > 0) {
-            /*************** 2023-10-30 PhreeSoft Mod to link to Bizuno Accounting by WalletID ***************/
-            $this->bizuno_get_wallet_id();
-            /*************** EOF - PhreeSoft Mod **********************/
-            $this->_data["Customer"] = $this->customerId;
-        }
-        $this->setAddress();
-    }
-
-    protected function setAddress()
-    {
-        if (strlen($this->billingCity) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["City"] = $this->billingCity;
-        }
-        if (strlen($this->billingCountry) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["Country"] = $this->billingCountry;
-        }
-        if (strlen($this->customerId) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["Customer"] = $this->customerId;
-        }
-        if (strlen($this->billingEmail) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["Email"] = $this->billingEmail;
-        }
-        if (strlen($this->billingAddress1) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["Line1"] = $this->billingAddress1;
-        }
-        if (strlen($this->billingAddress2) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["Line2"] = $this->billingAddress2;
-        }
-        if (strlen($this->billingPhone) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["Phone"] = $this->billingPhone;
-        }
-        if (strlen($this->billingState) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["State"] = $this->billingState;
-        }
-        if (strlen($this->billingPostalCode) > 0) {
-            $this->_data['Document']["DefaultBillTo"]["Zip"] = $this->billingPostalCode;
-        }
-
-        if (strlen($this->shippingCity) > 0) {
-            $this->_data["Shipto"]["City"] = $this->shippingCity;
-        }
-        if (strlen($this->shippingCountry) > 0) {
-            $this->_data["Shipto"]["Country"] = $this->shippingCountry;
-        }
-        if (strlen($this->customerId) > 0) {
-            $this->_data["Shipto"]["Customer"] = $this->customerId;
-        }
-        if (strlen($this->shippingEmail) > 0) {
-            $this->_data["Shipto"]["Email"] = $this->shippingEmail;
-        }
-        if (strlen($this->shippingAddress1) > 0) {
-            $this->_data["Shipto"]["Line1"] = $this->shippingAddress1;
-        }
-        if (strlen($this->shippingAddress2) > 0) {
-            $this->_data["Shipto"]["Line2"] = $this->shippingAddress2;
-        }
-        if (strlen($this->shippingPhone) > 0) {
-            $this->_data["Shipto"]["Phone"] = $this->shippingPhone;
-        }
-        if (strlen($this->shippingState) > 0) {
-            $this->_data["Shipto"]["State"] = $this->shippingState;
-        }
-        if (strlen($this->shippingPostalCode) > 0) {
-            $this->_data["Shipto"]["Zip"] = $this->shippingPostalCode;
-        }
-    }
 
     protected function setItens()
     {

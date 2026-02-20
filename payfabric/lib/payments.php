@@ -19,6 +19,7 @@ class payFabric_payments extends payFabric_ResponseBase
             $req = new payFabric_Request($this->credentials);
             $req->setVars($this->request);
             $req->setEndpoint($this->host . '/payment/api/transaction/update');
+            $req->enableStrictValidation();
             $req->setTransactionType("Update");
             $this->response = $req->processRequest();
         } catch (Exception $e) {
@@ -50,6 +51,7 @@ class payFabric_payments extends payFabric_ResponseBase
             $req = new payFabric_Request($this->credentials);
             $req->setVars($this->request);
             $req->setEndpoint($this->host . '/payment/api/transaction/create');
+            $req->enableStrictValidation();
             $req->setTransactionType("Authorization");
             $this->response = $req->processRequest();
         } catch (Exception $e) {
@@ -114,6 +116,7 @@ class payFabric_payments extends payFabric_ResponseBase
             $req = new payFabric_Request($this->credentials);
             $req->setVars($this->request);
             $req->setEndpoint($this->host . '/payment/api/transaction/create');
+            $req->enableStrictValidation();
             $req->setTransactionType("Sale");
             $this->response = $req->processRequest();
         } catch (Exception $e) {
@@ -142,6 +145,7 @@ class payFabric_payments extends payFabric_ResponseBase
             $req = new payFabric_Request($this->credentials);
             $req->setVars($this->request);
             $req->setEndpoint($this->host . '/payment/api/jwt/create');
+            $req->enableStrictValidation();
             $req->setTransactionType("Token");
             $this->response = $req->processRequest();
         } catch (Exception $e) {
@@ -230,6 +234,7 @@ class payFabric_payments extends payFabric_ResponseBase
             $req = new payFabric_Request($this->credentials);
             $req->setVars($this->request);
             $req->setEndpoint($this->host . '/payment/api/transaction/process');
+            $req->enableStrictValidation();
             $req->setTransactionType("Refund");
             $this->response = $req->processRequest();
         } catch (Exception $e) {

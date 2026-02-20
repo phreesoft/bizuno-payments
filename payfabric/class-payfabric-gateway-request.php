@@ -103,8 +103,8 @@ class PayFabric_Gateway_Request
             "referenceNum" => $order->get_order_number(), // REQUIRED - Merchant internal order number //
             "Amount" => $order->get_total(), // REQUIRED - Transaction amount in US format //
             "Currency" => get_woocommerce_currency(), // REQUIRED - Transaction amount currency
-            "pluginName" => "WooCommerce PayFabric Gateway", // Optional - plugin name
-            "pluginVersion" => $this->gateway->version, // Optional - plugin name
+            "pluginName" => BIZUNO_PAYMENTS_PAYFABRIC_NAME, // Optional - plugin name
+            "pluginVersion" => BIZUNO_PAYMENTS_PAYFABRIC_VERSION, // Optional - plugin name
             //Shipping Information
             "shippingCity" => $order->get_shipping_city(), // Optional - Customer city //
             "shippingCountry" => $order->get_shipping_country(), // Optional - Customer country code per ISO 3166-2 //

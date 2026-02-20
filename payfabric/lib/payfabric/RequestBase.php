@@ -5,6 +5,7 @@ class payFabric_RequestBase
     protected $timeout = 60;
     protected static $sslVerifyPeer = 0;
     protected static $sslVerifyHost = 2;
+    private $strictValidation = false;
     public static $logger;
     public static $loggerSev;
     public static $debug;
@@ -48,7 +49,13 @@ class payFabric_RequestBase
     public ?string $merchantNotificationUrl = null;
     public ?string $userAgent = null;
     public ?string $customerIPAddress = null;
-    
+    public ?string $Audience = null;
+    public ?string $Subject  = null;
+
+    public function enableStrictValidation()
+    {
+        $this->strictValidation = true;
+    }
     
     public function setEndpoint($param)
     {
@@ -169,16 +176,22 @@ class payFabric_RequestBase
     private function validateCall()
     {
         try {
-            // Preferred - clear separation
-            if ($this->number === null || $this->number === '') {
-                throw new InvalidArgumentException("[PayFabric Class] Field 'number' is required.");
+            // ────────────────────────────────────────────────
+            // Always-safe / format validations (run every time)
+            // ────────────────────────────────────────────────
+
+            // Card number format (only if provided)
+            if ($this->number !== null && $this->number !== '') {
+                if (!ctype_digit((string)$this->number)) {
+                    throw new InvalidArgumentException(
+                        "[PayFabric Class] Field 'number' accepts only numerical values."
+                    );
+                }
             }
-            if (!ctype_digit((string)$this->number)) {
-                throw new InvalidArgumentException("[PayFabric Class] Field 'number' accepts only numerical values.");
-            }
+
             // Credit card expiration month (both property names)
             if ($this->expMonth !== null && $this->expMonth !== '') {
-                $month = (string) $this->expMonth;
+                $month = (string)$this->expMonth;
                 if (strlen($month) !== 2 || !ctype_digit($month)) {
                     throw new InvalidArgumentException(
                         "[PayFabric Class] Credit card expiration month must be exactly 2 digits (01-12)."
@@ -186,7 +199,7 @@ class payFabric_RequestBase
                 }
             }
             if ($this->expirationMonth !== null && $this->expirationMonth !== '') {
-                $month = (string) $this->expirationMonth;
+                $month = (string)$this->expirationMonth;
                 if (strlen($month) !== 2 || !ctype_digit($month)) {
                     throw new InvalidArgumentException(
                         "[PayFabric Class] Credit card expiration month must be exactly 2 digits (01-12)."
@@ -196,7 +209,7 @@ class payFabric_RequestBase
 
             // Credit card expiration year
             if ($this->expYear !== null && $this->expYear !== '') {
-                $year = (string) $this->expYear;
+                $year = (string)$this->expYear;
                 if (strlen($year) !== 4 || !ctype_digit($year)) {
                     throw new InvalidArgumentException(
                         "[PayFabric Class] Credit card expiration year must be exactly 4 digits."
@@ -204,17 +217,17 @@ class payFabric_RequestBase
                 }
             }
             if ($this->expirationYear !== null && $this->expirationYear !== '') {
-                $year = (string) $this->expirationYear;
-                if (strlen($year) < 2 || !ctype_digit($year)) {  // note: your original allows 2+ digits here
+                $year = (string)$this->expirationYear;
+                if (strlen($year) < 2 || !ctype_digit($year)) {
                     throw new InvalidArgumentException(
                         "[PayFabric Class] Credit card expiration year must have at least 2 digits."
                     );
                 }
             }
 
-            // Number of installments
+            // Number of installments (format only)
             if ($this->numberOfInstallments !== null && $this->numberOfInstallments !== '') {
-                if (!ctype_digit((string) $this->numberOfInstallments)) {
+                if (!ctype_digit((string)$this->numberOfInstallments)) {
                     throw new InvalidArgumentException(
                         "[PayFabric Class] Field 'numberOfInstallments' accepts only numerical values."
                     );
@@ -223,7 +236,7 @@ class payFabric_RequestBase
 
             // Charge interest (Y/N flag)
             if ($this->chargeInterest !== null && $this->chargeInterest !== '') {
-                $value = strtoupper((string) $this->chargeInterest);
+                $value = strtoupper((string)$this->chargeInterest);
                 if (!in_array($value, ['Y', 'N'], true)) {
                     throw new InvalidArgumentException(
                         "[PayFabric Class] Field 'chargeInterest' only accepts 'Y' or 'N'."
@@ -244,15 +257,33 @@ class payFabric_RequestBase
 
             // Boleto instructions length
             if ($this->instructions !== null && $this->instructions !== '') {
-                if (strlen((string) $this->instructions) > 350) {
+                if (strlen((string)$this->instructions) > 350) {
                     throw new InvalidArgumentException(
                         "[PayFabric Class] Boleto instructions cannot be longer than 350 characters."
                     );
                 }
             }
+
+            // ────────────────────────────────────────────────
+            // STRICT REQUIRED-FIELD CHECKS — only when enabled
+            // ────────────────────────────────────────────────
+            if ($this->strictValidation) {
+                if ($this->number === null || $this->number === '') {
+                    throw new InvalidArgumentException(
+                        "[PayFabric Class] Field 'number' is required for this transaction."
+                    );
+                }
+
+                // Add other required fields here if needed, e.g.:
+                // if (empty($this->expMonth)) { throw ... }
+                // if (empty($this->expYear))  { throw ... }
+                // etc.
+            }
         } catch (Exception $e) {
             if (is_object(self::$logger)) {
-                self::$logger->logCrit($e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+                self::$logger->logCrit(
+                    $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine()
+                );
             }
             throw $e;
         }
@@ -280,6 +311,7 @@ class payFabric_RequestBase
                 default:
                     break;
             }
+            
             return $this->sendXml();
         } catch (Exception $e) {
             if (is_object(self::$logger)) {

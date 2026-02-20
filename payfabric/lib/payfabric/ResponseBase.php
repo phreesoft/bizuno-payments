@@ -114,7 +114,7 @@ class payFabric_ResponseBase extends payFabric_ServiceBase
     }
 
     /**
-     * Gets authotization code returned by the Acquirer
+     * Gets authorization code returned by the Acquirer
      * @return string
      */
     public function getAuthCode()

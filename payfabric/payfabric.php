@@ -231,12 +231,30 @@ function bizuno_payfabric_gateway_class()
 
         private function enqueue_styles()
         {
-            wp_enqueue_style(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'assets/css/payfabric-gateway-woocommerce.css', array(), $this->version, 'all');
+            wp_enqueue_style(strtolower(BIZUNO_PAYMENTS_PAYFABRIC_NAME), plugin_dir_url(__FILE__) . 'assets/css/payfabric-gateway-woocommerce.css', array(), BIZUNO_PAYMENTS_PAYFABRIC_VERSION, 'all');
         }
 
         private function enqueue_js()
         {
-            wp_enqueue_script(strtolower($this->plugin_name), plugin_dir_url(__FILE__) . 'assets/js/payfabric-gateway-woocommerce.js', ['jquery'], $this->version, true);
+            wp_enqueue_script(
+                strtolower($this->plugin_name),
+                plugin_dir_url(__FILE__) . 'admin/assets/js/payfabric-gateway-woocommerce.js',
+                ['jquery'],
+                $this->version . time(),  // bust cache
+                true
+            );
+            // Pass debug flag to JS
+            wp_localize_script(
+                strtolower($this->plugin_name),
+                'payfabricDebug',
+                [
+                    'mode'     => $this->payment_modes,
+                    'ajaxurl'  => admin_url('admin-ajax.php'),
+                    'nonce'    => wp_create_nonce('payfabric_nonce'),
+                    'log'      => true  // enable console logging
+                ]
+            );
+            wp_enqueue_script(strtolower(BIZUNO_PAYMENTS_PAYFABRIC_NAME), plugin_dir_url(__FILE__) . 'assets/js/payfabric-gateway-woocommerce.js', ['jquery'], BIZUNO_PAYMENTS_PAYFABRIC_VERSION, true);
         }
 
         public function admin_options()
